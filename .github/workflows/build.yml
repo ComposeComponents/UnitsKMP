@@ -73,15 +73,15 @@ jobs:
       matrix:
         configuration:
         - buildCommand: :shared:linkPodReleaseFrameworkIosArm64
-          filesystemLocation: ./shared/build/bin/Arm64/podReleaseFramework/shared.framework
+          filesystemLocation: ./shared/build/bin/iosArm64/podReleaseFramework/shared.framework
           artifactName: shared-iosArm64.framework
           artifactKey: shared-iosArm64
         - buildCommand: :shared:linkPodReleaseFrameworkIosSimulatorArm64
-          filesystemLocation: ./shared/build/bin/SimulatorArm64/podReleaseFramework/shared.framework
+          filesystemLocation: ./shared/build/bin/iosSimulatorArm64/podReleaseFramework/shared.framework
           artifactName: shared-iosSimulatorArm64.framework
           artifactKey: shared-iosSimulatorArm64
         - buildCommand: :shared:linkPodReleaseFrameworkIosX64
-          filesystemLocation: ./shared/build/bin/X64/podReleaseFramework/shared.framework
+          filesystemLocation: ./shared/build/bin/iosX64/podReleaseFramework/shared.framework
           artifactName: shared-iosX64.framework
           artifactKey: shared-iosX64
     steps:

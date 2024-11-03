@@ -26,9 +26,9 @@ iosTargets = new Listing {
 
 function buildIosKmpTarget(moduleName: String, moduleBuildPath: String, target: String) = new KMPTarget {
   buildCommand = ":\(moduleName):linkPodReleaseFrameworkIos\(target.capitalize())"
-  filesystemLocation = "\(moduleBuildPath)/bin/\(target)/podReleaseFramework/\(moduleName).framework"
-  artifactName = "\(moduleName)-ios\(target).framework"
-  artifactKey = "\(moduleName)-ios\(target)"
+  filesystemLocation = "\(moduleBuildPath)/bin/ios\(target.capitalize())/podReleaseFramework/\(moduleName).framework"
+  artifactName = "\(moduleName)-ios\(target.capitalize()).framework"
+  artifactKey = "\(moduleName)-ios\(target.capitalize())"
 }
 
 function buildAndroidKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
