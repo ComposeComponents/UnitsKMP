@@ -75,6 +75,8 @@ mavenPublishing {
     coordinates("cl.emilym.kmp", "units", findProperty("version") as String)
 
     pom {
+        name.set("Units")
+        description.set("A helper library for defining spacing and textsizes as a multiple of some base unit (default 16dp/16sp)")
         url.set(findProperty("pom.url") as String)
         licenses {
             license {
