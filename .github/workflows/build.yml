@@ -154,7 +154,7 @@ jobs:
     - name: Add version to file name
       run: |-
         file="./${{ matrix.artifact.name }}"
-        echo "NEW_NAME=${file%.*}-v${{ needs.version.outputs.version }}.${file##*.}" >> GITHUB_ENV
+        echo "NEW_NAME=${file%.*}-v${{ needs.version.outputs.version }}.${file##*.}" >> $GITHUB_ENV
     - name: Upload Artifact to Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
