@@ -181,7 +181,7 @@ jobs = new Mapping {
                 env = new Mapping {
                     ["ORG_GRADLE_PROJECT_sonatypePassword"] = "${{ secrets.SONATYPE_PASSWORD }}"
                     ["ORG_GRADLE_PROJECT_sonatypeUsername"] = "${{ secrets.SONATYPE_USERNAME }}"
-                    ["ORG_GRADLE_PROJECT_signingInMemoryKey"] = "${{ secrets.PGP_SECRET }}"
+                    ["ORG_GRADLE_PROJECT_signingInMemoryKey"] = "${{ secrets.PGP_SECRET_KMP }}"
                     ["ORG_GRADLE_PROJECT_signingInMemoryKeyPassword"] = "${{ secrets.PGP_PASSPHRASE }}"
                 }
             }

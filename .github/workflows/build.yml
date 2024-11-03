@@ -205,7 +205,7 @@ jobs:
       env:
         ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
         ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
-        ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.PGP_SECRET }}
+        ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.PGP_SECRET_KMP }}
         ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.PGP_PASSPHRASE }}
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
