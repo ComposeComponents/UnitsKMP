@@ -42,7 +42,7 @@ jobs:
         configuration:
         - buildCommand: :shared:assembleRelease
           filesystemLocation: ./shared/build/outputs/aar/shared-release.aar
-          artifactName: shared.aar
+          artifactName: shared-android.aar
           artifactKey: shared-aar
           needsZip: false
           artifactMimeType: application/zip
@@ -162,7 +162,7 @@ jobs:
           name: shared-iosX64.framework.zip
           mimeType: application/zip
         - key: shared-aar
-          name: shared.aar
+          name: shared-android.aar
           mimeType: application/zip
     steps:
     - uses: actions/download-artifact@master
@@ -181,4 +181,4 @@ jobs:
         upload_url: ${{ needs.release.outputs.upload_url }}
         asset_path: ./${{ matrix.artifact.name }}
         asset_name: ${{ env.NEW_NAME }}
-        asset_content_type: application/zip
+        asset_content_type: ${{ matrix.artifact.mimeType }}

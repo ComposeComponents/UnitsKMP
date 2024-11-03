@@ -39,21 +39,21 @@ function buildIosKmpTarget(moduleName: String, moduleBuildPath: String, target: 
 function buildAndroidKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
   buildCommand = ":\(moduleName):assembleRelease"
   filesystemLocation = "\(moduleBuildPath)/outputs/aar/\(moduleName)-release.aar"
-  artifactName = "\(moduleName).aar"
+  artifactName = "\(moduleName)-android.aar"
   artifactKey = "\(moduleName)-aar"
 }
 
 function buildJvmKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
   buildCommand = ":\(moduleName):assembleJvm"
   filesystemLocation = "./(\(moduleBuildPath)/libs/\(moduleName)-jvm.jar"
-  artifactName = "\(moduleName).jvm"
+  artifactName = "\(moduleName)-java.jvm"
   artifactKey = "\(moduleName)-jvm"
 }
 
 function buildJsKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
   buildCommand = ":\(moduleName):assembleJs"
   filesystemLocation = "./(\(moduleBuildPath)/distributions/\(moduleName).js"
-  artifactName = "\(moduleName).js"
+  artifactName = "\(moduleName)-javascript.js"
   artifactKey = "\(moduleName)-js"
   artifactMimeType = "text/javascript"
 }
