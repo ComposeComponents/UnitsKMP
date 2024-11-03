@@ -1,1 +1,1 @@
-pkl eval .github/workflows/workflows.pkl -m .github/workflows
+pkl eval .github/workflows/build.pkl -f yaml -o .github/workflows/build.yml

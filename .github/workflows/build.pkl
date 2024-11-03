@@ -1,8 +1,29 @@
 amends "base.pkl"
 import "common.pkl"
+import "targets.pkl" as targets
 
 local modules: List<String> = List("shared")
-local sonatypeEnabled = true
+local sonatypeEnabled = false
+
+local iosBuildTargets = new Listing {
+    for (moduleName in modules) {
+        for (iosTarget in targets.iosTargets) {
+            targets.buildIosKmpTarget(
+                moduleName,
+                "./\(moduleName)/build",
+                iosTarget
+            )
+        }
+    }
+}
+local androidBuildTargets = new Listing {
+    for (moduleName in modules) {
+        targets.buildAndroidKmpTarget(
+            moduleName,
+            "./\(moduleName)/build"
+        )
+    }
+}
 
 name = "Build Library"
 
@@ -56,39 +77,14 @@ jobs = new Mapping {
             }
         }
     }
-    ["build"] = new Job {
-        strategy = new JobStrategy {
-            matrix = new Mapping {
-                ["module"] = modules
-            }
-        }
-        needs = new Listing {
-            "version"
-        }
-        steps = new Listing {
-            common.checkout
-            common.setupJdk
-            (common.gradle(
-                "Build",
-                "${{ matrix.module }}:build"
-            )) {
-                env = new Mapping {
-                    ["ORG_GRADLE_PROJECT_version"] = "${{ needs.version.outputs.version }}"
-                }
-            }
-            new CommandStep {
-                name = "Rename AAR"
-                run = "mv ./${{ matrix.module }}/build/outputs/aar/${{ matrix.module }}-${{ needs.version.outputs.version }}.aar ./${{ matrix.module }}.aar"
-            }
-            new ActionStep {
-                uses = "actions/upload-artifact@master"
-                with = new Mapping {
-                    ["name"] = "${{ matrix.module }}-aar"
-                    ["path"] = "./${{ matrix.module }}.aar"
-                }
-            }
-        }
-    }
+    ["build-android"] = targets.buildTargetJob(
+        androidBuildTargets,
+        "ubuntu-latest"
+    )
+    ["build-ios"] = targets.buildTargetJob(
+        iosBuildTargets,
+        "macos-latest"
+    )
     ["release"] = new Job {
         needs = new Listing {
             "version"
@@ -108,21 +104,36 @@ jobs = new Mapping {
     ["publish-release"] = new Job {
         strategy = new JobStrategy {
             matrix = new Mapping {
-                ["module"] = modules
+                ["artifact"] = new Listing {
+                    for (target in iosBuildTargets) {
+                        target.toArtifact()
+                    }
+                    for (target in androidBuildTargets) {
+                        target.toArtifact()
+                    }
+                }
             }
         }
         needs = new Listing {
             "version"
             "release"
-            "build"
+            "build-android"
+            "build-ios"
         }
         steps = new Listing {
             new ActionStep {
                 uses = "actions/download-artifact@master"
                 with = new Mapping {
-                    ["name"] = "${{ matrix.module }}-aar"
+                    ["name"] = "${{ matrix.artifact.key }}"
                     ["path"] = "./"
                 }
+            }
+            new CommandStep {
+                name = "Add version to file name"
+                run = """
+                    file="./${{ matrix.artifact.name }}"
+                    echo "NEW_NAME=${file%.*}-v${{ needs.version.outputs.version }}.${file##*.}" >> GITHUB_ENV
+                    """
             }
             new ActionStep {
                 name = "Upload Artifact to Release"
@@ -132,8 +143,8 @@ jobs = new Mapping {
                 }
                 with = new Mapping {
                     ["upload_url"] = "${{ needs.release.outputs.upload_url }}"
-                    ["asset_path"] = "./${{ matrix.module }}.aar"
-                    ["asset_name"] = "${{ matrix.module }}-v${{ needs.version.outputs.version }}.aar"
+                    ["asset_path"] = "./${{ matrix.artifact.name }}"
+                    ["asset_name"] = "${{ env.NEW_NAME }}"
                     ["asset_content_type"] = "application/zip"
                 }
             }

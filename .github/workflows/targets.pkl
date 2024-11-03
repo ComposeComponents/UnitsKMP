@@ -1,0 +1,94 @@
+import "base.pkl"
+import "common.pkl"
+
+class Artifact {
+  key: String
+  name: String
+}
+
+class KMPTarget {
+  buildCommand: String
+  filesystemLocation: String
+  artifactName: String
+  artifactKey: String
+
+  function toArtifact(): Artifact = new Artifact {
+    key = artifactKey
+    name = artifactName
+  }
+}
+
+iosTargets = new Listing {
+  "Arm64"
+  "iosSimulatorArm64"
+  "X64"
+}
+
+function buildIosKmpTarget(moduleName: String, moduleBuildPath: String, target: String) = new KMPTarget {
+  buildCommand = ":\(moduleName):linkPodReleaseFrameworkIos\(target.capitalize())"
+  filesystemLocation = "\(moduleBuildPath)/bin/\(target)/podReleaseFramework/\(moduleName).framework"
+  artifactName = "\(moduleName)-ios\(target).framework"
+  artifactKey = "\(moduleName)-ios\(target)"
+}
+
+function buildAndroidKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
+  buildCommand = ":\(moduleName):assembleRelease"
+  filesystemLocation = "\(moduleBuildPath)/outputs/aar/\(moduleName)-release.aar"
+  artifactName = "\(moduleName).aar"
+  artifactKey = "\(moduleName)-aar"
+}
+
+function buildJvmKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
+  buildCommand = ":\(moduleName):assembleJvm"
+  filesystemLocation = "./(\(moduleBuildPath)/libs/\(moduleName)-jvm.jar"
+  artifactName = "\(moduleName).jvm"
+  artifactKey = "\(moduleName)-jvm"
+}
+
+function buildJsKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
+  buildCommand = ":\(moduleName):assembleJs"
+  filesystemLocation = "./(\(moduleBuildPath)/distributions/\(moduleName).js"
+  artifactName = "\(moduleName).js"
+  artifactKey = "\(moduleName)-js"
+}
+
+function toJobStrategy(targets: Listing<KMPTarget>): base.JobStrategy = new base.JobStrategy {
+  matrix = new Mapping {
+    ["configuration"] = new Listing {
+      for (target in targets) {
+        target.toMap()
+      }
+    }
+  }
+}
+
+function buildTargetJob(targets: Listing<KMPTarget>, runPlatform: String) = new base.Job {
+  `runs-on` = runPlatform
+  strategy = toJobStrategy(targets)
+  needs = new Listing {
+    "version"
+  }
+  steps = new Listing {
+    common.checkout
+    common.setupJdk
+    (common.gradle(
+      "Build",
+      "${{ matrix.configuration.buildCommand }}"
+    )) {
+      env = new Mapping {
+        ["ORG_GRADLE_PROJECT_version"] = "${{ needs.version.outputs.version }}"
+      }
+    }
+    new base.CommandStep {
+      name = "Rename Artifact"
+      run = "mv ${{ matrix.configuration.filesystemLocation }} ./${{ matrix.configuration.artifactName }}"
+    }
+    new base.ActionStep {
+      uses = "actions/upload-artifact@master"
+      with = new Mapping {
+        ["name"] = "${{ matrix.configuration.artifactKey }}"
+        ["path"] = "./${{ matrix.configuration.artifactName }}"
+      }
+    }
+  }
+}
