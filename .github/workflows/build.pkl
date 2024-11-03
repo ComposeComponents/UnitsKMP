@@ -3,7 +3,7 @@ import "common.pkl"
 import "targets.pkl" as targets
 
 local modules: List<String> = List("shared")
-local sonatypeEnabled = false
+local sonatypeEnabled = true
 
 local iosBuildTargets = new Listing {
     for (moduleName in modules) {
@@ -151,6 +151,7 @@ jobs = new Mapping {
         }
     }
     ["publish-sonatype"] = if(sonatypeEnabled) new Job {
+        `runs-on` = "macos-latest"
         strategy = new JobStrategy {
             matrix = new Mapping {
                 ["module"] = modules
@@ -162,7 +163,7 @@ jobs = new Mapping {
         needs = new Listing {
             "version"
         }
-        `if` = "github.ref == 'refs/heads/main'"
+//         `if` = "github.ref == 'refs/heads/main'"
         steps = new Listing {
             common.checkout
             common.setupJdk
@@ -174,14 +175,14 @@ jobs = new Mapping {
                 -Ppom.scm.connection="scm:git:git://github.com/${{ github.repository }}"
                 -Ppom.scm.developerConnection="scm:git:ssh://github.com/${{ github.repository }}"
                 -Ppom.scm.url="https://github.com/${{ github.repository }}"
-                ${{ matrix.module }}:publishToCentralPortal --no-daemon
+                ${{ matrix.module }}:publishAndReleaseToMavenCentral --no-configuration-cache
                 """
             )) {
                 env = new Mapping {
                     ["ORG_GRADLE_PROJECT_sonatypePassword"] = "${{ secrets.SONATYPE_PASSWORD }}"
                     ["ORG_GRADLE_PROJECT_sonatypeUsername"] = "${{ secrets.SONATYPE_USERNAME }}"
-                    ["ORG_GRADLE_PROJECT_signingKey"] = "${{ secrets.PGP_SECRET }}"
-                    ["ORG_GRADLE_PROJECT_signingPassword"] = "${{ secrets.PGP_PASSPHRASE }}"
+                    ["ORG_GRADLE_PROJECT_signingInMemoryKey"] = "${{ secrets.PGP_SECRET }}"
+                    ["ORG_GRADLE_PROJECT_signingInMemoryKeyPassword"] = "${{ secrets.PGP_PASSPHRASE }}"
                 }
             }
         }
