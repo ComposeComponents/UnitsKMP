@@ -131,8 +131,8 @@ jobs = new Mapping {
             new CommandStep {
                 name = "Add version to file name"
                 run = """
-                    file="./${{ matrix.artifact.name }}"
-                    echo "NEW_NAME=${file%.*}-v${{ needs.version.outputs.version }}.${file##*.}" >> $GITHUB_ENV
+                    file="${{ matrix.artifact.name }}"
+                    echo "NEW_NAME=${file%%.*}-v${{ needs.version.outputs.version }}.${file#*.}" >> $GITHUB_ENV
                     """
             }
             new ActionStep {

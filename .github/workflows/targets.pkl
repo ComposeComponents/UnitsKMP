@@ -4,6 +4,7 @@ import "common.pkl"
 class Artifact {
   key: String
   name: String
+  mimeType: String
 }
 
 class KMPTarget {
@@ -11,10 +12,13 @@ class KMPTarget {
   filesystemLocation: String
   artifactName: String
   artifactKey: String
+  needsZip: Boolean = false
+  artifactMimeType: String = "application/zip"
 
   function toArtifact(): Artifact = new Artifact {
     key = artifactKey
-    name = artifactName
+    name = "\(artifactName)\(if(needsZip) ".zip" else "")"
+    mimeType = artifactMimeType
   }
 }
 
@@ -29,6 +33,7 @@ function buildIosKmpTarget(moduleName: String, moduleBuildPath: String, target: 
   filesystemLocation = "\(moduleBuildPath)/bin/ios\(target.capitalize())/podReleaseFramework/\(moduleName).framework"
   artifactName = "\(moduleName)-ios\(target.capitalize()).framework"
   artifactKey = "\(moduleName)-ios\(target.capitalize())"
+  needsZip = true
 }
 
 function buildAndroidKmpTarget(moduleName: String, moduleBuildPath: String) = new KMPTarget {
@@ -50,6 +55,7 @@ function buildJsKmpTarget(moduleName: String, moduleBuildPath: String) = new KMP
   filesystemLocation = "./(\(moduleBuildPath)/distributions/\(moduleName).js"
   artifactName = "\(moduleName).js"
   artifactKey = "\(moduleName)-js"
+  artifactMimeType = "text/javascript"
 }
 
 function toJobStrategy(targets: Listing<KMPTarget>): base.JobStrategy = new base.JobStrategy {
@@ -83,11 +89,16 @@ function buildTargetJob(targets: Listing<KMPTarget>, runPlatform: String) = new 
       name = "Rename Artifact"
       run = "mv ${{ matrix.configuration.filesystemLocation }} ./${{ matrix.configuration.artifactName }}"
     }
+    new base.CommandStep {
+      name = "Zip if needed"
+      `if` = "${{ matrix.configuration.needsZip }}"
+      run = "zip -r ${{ matrix.configuration.artifactName }}.zip ./${{ matrix.configuration.artifactName }}"
+    }
     new base.ActionStep {
       uses = "actions/upload-artifact@master"
       with = new Mapping {
         ["name"] = "${{ matrix.configuration.artifactKey }}"
-        ["path"] = "./${{ matrix.configuration.artifactName }}"
+        ["path"] = "./${{ matrix.configuration.artifactName }}${{ matrix.configuration.needsZip && '.zip' || '' }}"
       }
     }
   }

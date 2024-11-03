@@ -44,6 +44,8 @@ jobs:
           filesystemLocation: ./shared/build/outputs/aar/shared-release.aar
           artifactName: shared.aar
           artifactKey: shared-aar
+          needsZip: false
+          artifactMimeType: application/zip
     steps:
     - uses: actions/checkout@v3
       with:
@@ -61,10 +63,13 @@ jobs:
         arguments: ${{ matrix.configuration.buildCommand }}
     - name: Rename Artifact
       run: mv ${{ matrix.configuration.filesystemLocation }} ./${{ matrix.configuration.artifactName }}
+    - name: Zip if needed
+      if: ${{ matrix.configuration.needsZip }}
+      run: zip -r ${{ matrix.configuration.artifactName }}.zip ./${{ matrix.configuration.artifactName }}
     - uses: actions/upload-artifact@master
       with:
         name: ${{ matrix.configuration.artifactKey }}
-        path: ./${{ matrix.configuration.artifactName }}
+        path: ./${{ matrix.configuration.artifactName }}${{ matrix.configuration.needsZip && '.zip' || '' }}
   build-ios:
     needs:
     - version
@@ -76,14 +81,20 @@ jobs:
           filesystemLocation: ./shared/build/bin/iosArm64/podReleaseFramework/shared.framework
           artifactName: shared-iosArm64.framework
           artifactKey: shared-iosArm64
+          needsZip: true
+          artifactMimeType: application/zip
         - buildCommand: :shared:linkPodReleaseFrameworkIosSimulatorArm64
           filesystemLocation: ./shared/build/bin/iosSimulatorArm64/podReleaseFramework/shared.framework
           artifactName: shared-iosSimulatorArm64.framework
           artifactKey: shared-iosSimulatorArm64
+          needsZip: true
+          artifactMimeType: application/zip
         - buildCommand: :shared:linkPodReleaseFrameworkIosX64
           filesystemLocation: ./shared/build/bin/iosX64/podReleaseFramework/shared.framework
           artifactName: shared-iosX64.framework
           artifactKey: shared-iosX64
+          needsZip: true
+          artifactMimeType: application/zip
     steps:
     - uses: actions/checkout@v3
       with:
@@ -101,10 +112,13 @@ jobs:
         arguments: ${{ matrix.configuration.buildCommand }}
     - name: Rename Artifact
       run: mv ${{ matrix.configuration.filesystemLocation }} ./${{ matrix.configuration.artifactName }}
+    - name: Zip if needed
+      if: ${{ matrix.configuration.needsZip }}
+      run: zip -r ${{ matrix.configuration.artifactName }}.zip ./${{ matrix.configuration.artifactName }}
     - uses: actions/upload-artifact@master
       with:
         name: ${{ matrix.configuration.artifactKey }}
-        path: ./${{ matrix.configuration.artifactName }}
+        path: ./${{ matrix.configuration.artifactName }}${{ matrix.configuration.needsZip && '.zip' || '' }}
   release:
     permissions:
       contents: write
@@ -139,13 +153,17 @@ jobs:
       matrix:
         artifact:
         - key: shared-iosArm64
-          name: shared-iosArm64.framework
+          name: shared-iosArm64.framework.zip
+          mimeType: application/zip
         - key: shared-iosSimulatorArm64
-          name: shared-iosSimulatorArm64.framework
+          name: shared-iosSimulatorArm64.framework.zip
+          mimeType: application/zip
         - key: shared-iosX64
-          name: shared-iosX64.framework
+          name: shared-iosX64.framework.zip
+          mimeType: application/zip
         - key: shared-aar
           name: shared.aar
+          mimeType: application/zip
     steps:
     - uses: actions/download-artifact@master
       with:
@@ -153,8 +171,8 @@ jobs:
         path: ./
     - name: Add version to file name
       run: |-
-        file="./${{ matrix.artifact.name }}"
-        echo "NEW_NAME=${file%.*}-v${{ needs.version.outputs.version }}.${file##*.}" >> $GITHUB_ENV
+        file="${{ matrix.artifact.name }}"
+        echo "NEW_NAME=${file%%.*}-v${{ needs.version.outputs.version }}.${file#*.}" >> $GITHUB_ENV
     - name: Upload Artifact to Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
