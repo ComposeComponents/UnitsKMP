@@ -20,7 +20,7 @@ class KMPTarget {
 
 iosTargets = new Listing {
   "Arm64"
-  "iosSimulatorArm64"
+  "SimulatorArm64"
   "X64"
 }
 

@@ -76,10 +76,10 @@ jobs:
           filesystemLocation: ./shared/build/bin/Arm64/podReleaseFramework/shared.framework
           artifactName: shared-iosArm64.framework
           artifactKey: shared-iosArm64
-        - buildCommand: :shared:linkPodReleaseFrameworkIosIosSimulatorArm64
-          filesystemLocation: ./shared/build/bin/iosSimulatorArm64/podReleaseFramework/shared.framework
-          artifactName: shared-iosiosSimulatorArm64.framework
-          artifactKey: shared-iosiosSimulatorArm64
+        - buildCommand: :shared:linkPodReleaseFrameworkIosSimulatorArm64
+          filesystemLocation: ./shared/build/bin/SimulatorArm64/podReleaseFramework/shared.framework
+          artifactName: shared-iosSimulatorArm64.framework
+          artifactKey: shared-iosSimulatorArm64
         - buildCommand: :shared:linkPodReleaseFrameworkIosX64
           filesystemLocation: ./shared/build/bin/X64/podReleaseFramework/shared.framework
           artifactName: shared-iosX64.framework
@@ -140,8 +140,8 @@ jobs:
         artifact:
         - key: shared-iosArm64
           name: shared-iosArm64.framework
-        - key: shared-iosiosSimulatorArm64
-          name: shared-iosiosSimulatorArm64.framework
+        - key: shared-iosSimulatorArm64
+          name: shared-iosSimulatorArm64.framework
         - key: shared-iosX64
           name: shared-iosX64.framework
         - key: shared-aar
